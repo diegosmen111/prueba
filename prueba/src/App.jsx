@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
+import Layout from "./components/layouts/Layout";
+import Home from "./pages/Home";
+import BigCard from "./components/ui/CardComponents/BigCard";
+import Backdrop from "./components/ui/CardComponents/Backdrop";
+import './App.css'
 function App() {
-  const [count, setCount] = useState(0)
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [bigCardIsOpen, setBigCardIsOpen] = useState(false);
+  const [bigCardData, setBigCardData] = useState(null);
+
+  function openBigCard(id, image) {
+    setBigCardIsOpen(true);
+    setBigCardData({ id, image });
+  }
+
+  function closeBigCard() {
+    setBigCardIsOpen(false);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <QueryClientProvider client={client}>
+      <Layout onSearch={setSearchTerm}>
+        <Home searchTerm={searchTerm} openBigCard={openBigCard} />
+      </Layout>
+      {bigCardIsOpen && <Backdrop closeBigCard={closeBigCard} />}
+      {bigCardIsOpen && (
+        <BigCard
+          closeBigCard={closeBigCard}
+          id={bigCardData.id}
+          image={bigCardData.image}
+        />
+      )}
+    </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;
